@@ -1,20 +1,22 @@
 [project]
 name = "crimbo"
 version = "0.1.0"
-description = "A general purpose discord bot"
-authors = [{ name = "Kris", email = "krispysnacc@gmail.com" }]
+description = "A General purpose discord bot"
+authors = [{ name = "kris", email = "krispysnacc@gmail.com" }]
 readme = "README.md"
 license = { text = "MIT" }
-dependencies = ["discord.py"]
-
-
-[project.scripts]
-crimbo = "main:main"
-
-
-[build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+dependencies = [
+    "discord.py",
+    "box",
+    "toml",
+    "imageio[py]",
+    "numpy",
+    "pyopencl",
+    "fuzzywuzzy",
+    "python-dotenv",
+    "colorzero",
+    "python-Levenshtein",
+]
 
 [tool.setuptools]
 package-dir = { "" = "src" }

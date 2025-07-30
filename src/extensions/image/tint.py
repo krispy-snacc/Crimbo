@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import discord
 from discord import app_commands
-
 from bot import Crimbo
-
+from config import CONFIG
 from . import image_group
-from . import _effect as ef
+from extensions.utils import image_helper as ef
 from extensions.utils.color_arg import ColorArg
 import numpy as np
+from logger import log
 
 name: str = "tint"
 description: str = "adds a tint effect to the image"
@@ -39,7 +39,7 @@ __kernel void _main(
 @image_group.command(name=name, description=description)
 @app_commands.describe(image="The image to put this effect on")
 @app_commands.describe(color="The color of the tint to be applied")
-@app_commands.describe(intensity="Amount of intensity")
+@app_commands.describe(intensity="Amount of intensity in percent %")
 @app_commands.describe(ephemeral="Should the response be ephemeral (only visible to you)")
 async def effect(
     interaction: discord.Interaction, 
@@ -52,7 +52,7 @@ async def effect(
     bot: Crimbo = interaction.client
     await interaction.response.defer()
     embed, file = ef.image_to_embed(
-                ef.apply_effect(
+                await ef.apply_effect_async(
                     kernel_src, 
                     await ef.attachment_to_image(image),
                     np.uint8(color.value.r * 255),
@@ -60,10 +60,6 @@ async def effect(
                     np.uint8(color.value.b * 255),
                     np.float32(min(max(intensity, 0), 100)/100)
                 ),
-                bot.config.primary_color
+                CONFIG.PRIMARY_COLOR
             )
-    # embed, file = ef.image_to_embed(
-    #             await ef.attachment_to_image(image),
-    #             bot.config.primary_color
-    #         )
     await interaction.followup.send(embed=embed, file=file, ephemeral=ephemeral)

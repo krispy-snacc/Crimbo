@@ -1,37 +1,19 @@
-# from email.policy import default
-# from typing import List
-# from discord.ext.commands import Bot, SlashCommandOption, SlashCommand, InteractionDataOption, SlashCommandOptionTypes
-# from utils.fuzzy_search import fuzzy_search, fuzzy_search_2 
-# import discord
-
-
 from __future__ import annotations
+from typing import Iterable
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 from bot import Crimbo
+from config import CONFIG
+from extensions.utils.gen_helpers import walk_all_commands
 from extensions.utils.fuzzy_search import fuzzy_search_2
 
 
-
-# embed1 = discord.Embed(title="Crimbo Hellp", description="```Use help <command> to get more info on a specific command```", color=0x80002f)
+# TODO to implement
 # gen_cmds = ['avatar', 'guildavatar', 'emote', 'help', 'ping', 'invite', 'prefix', 'roleinfo', 'serverinfo', 'userinfo', 'serverpfp', 'status', 'translate', 'yt', 'spoiler']
-# embed1.add_field(name=":information_source: General commands", value=",\n".join(gen_cmds))
-
-# embed2 = discord.Embed(title="Crimbo Hellp", description="```Use help <command> to get more info on a specific command```", color=0x80002f)
 # fun_cmds = ['cat', 'choose', 'color', 'define', 'dog', 'fortune', 'pokemon', 'twitter', 'uwu', 'poll', 'getpoll', 'strawpoll', 'sub', 'sup', 'bannerize', 'rip', 'wallpaper', 'why', 'bored', 'wyr', 'topic', 'screenshot', 'lyrics', 'shower thought', 'movie', 'pet']
-# embed2.add_field(name=":tada: Fun commands", value=",\n".join(fun_cmds))
-
-# embed3 = discord.Embed(title="Crimbo Hellp", description="```Use help <command> to get more info on a specific command```", color=0x80002f)
 # img_cmds = ['captcha', 'colors', 'delete', 'vhs', 'wanted', 'wasted', 'chromatic', 'ree', 'boom', 'neon', 'photo', 'film', 'lego', 'edit (unstable)']
-# embed3.add_field(name=":sunrise_over_mountains: Image commands", value=",\n".join(img_cmds))
-
-# help_embeds = {
-#     "embed1": embed1,
-#     "embed2": embed2,
-#     "embed3": embed3,
-# }
 
 
 class Dropdown(discord.ui.Select):
@@ -66,7 +48,7 @@ class Dropdown(discord.ui.Select):
             for cmd in group_cmd.commands
             if isinstance(cmd, app_commands.Command)
         ]
-        embed = discord.Embed(title="Crimbo Help", description="```Use help <command> to get more info on a specific command```", color=self.bot.config.primary_color)
+        embed = discord.Embed(title="Crimbo Help", description="```Use help <command> to get more info on a specific command```", color=CONFIG.PRIMARY_COLOR)
         embed.add_field(name=f"{value.capitalize()} Commands List", value=",\n".join(gcs))
         return embed
 
@@ -78,19 +60,6 @@ class DropdownView(discord.ui.View):
         # Adds the dropdown to our view object.
         self.add_item(Dropdown(bot, init_user_id))
         self.add_item(discord.ui.Button(label='Invite Crimbo!', url="https://google.com"))
-
-from typing import Iterable, Generator
-
-def walk_all_commands(
-    commands: Iterable[app_commands.Command | app_commands.Group],
-    parent: str = ""
-) -> Generator[tuple[str, app_commands.Command], None, None]:
-    for cmd in commands:
-        full_name = f"{parent} {cmd.name}".strip()
-        if isinstance(cmd, app_commands.Group):
-            yield from walk_all_commands(cmd.commands, full_name)
-        else:
-            yield (full_name, cmd)
 
 def get_command_by_path(
     commands: Iterable[app_commands.Command, app_commands.Group],
@@ -168,7 +137,7 @@ class Help(commands.Cog):
         if command != None:
             cmd = self.get_command_from_name(command, interaction.guild_id)
             if cmd != None:
-                embed = discord.Embed(title=f"/{cmd.name}", description=cmd.description, color=self.bot.config.primary_color)
+                embed = discord.Embed(title=f"/{cmd.name}", description=cmd.description, color=CONFIG.PRIMARY_COLOR)
                 doc = getattr(cmd.callback, "__doc__", None)
                 if doc:
                     embed.add_field(name="Details", value=f"```{doc.strip()}```", inline=False)
@@ -178,7 +147,7 @@ class Help(commands.Cog):
             else:
                 raise ValueError("Invalid Command")
         else:
-            embed = discord.Embed(description='**Choose help category to learn more or use help <command> to know more about a specific command**', color=self.bot.config.primary_color)
+            embed = discord.Embed(description='**Choose help category to learn more or use help <command> to know more about a specific command**', color=CONFIG.PRIMARY_COLOR)
             await interaction.response.send_message(embed=embed, view=DropdownView(bot=self.bot, init_user_id=interaction.user.id), ephemeral=ephemeral)
 
 async def setup(bot: Crimbo):

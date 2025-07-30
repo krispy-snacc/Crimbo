@@ -1,4 +1,6 @@
+import sys
 from bot import Crimbo
+from config import CONFIG
 
 init_exts = [
     # root commands
@@ -15,5 +17,7 @@ init_exts = [
 
 
 if __name__ == "__main__":
+    sys.stdout.write("\033c")
+    sys.stdout.flush()
     bot = Crimbo(init_exts=init_exts)
-    bot.run(bot.config["token"])
+    bot.run(CONFIG.TOKEN)

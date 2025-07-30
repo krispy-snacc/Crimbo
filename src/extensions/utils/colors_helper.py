@@ -29,6 +29,7 @@ def get_color_embed(color_str: str) -> discord.Embed:
     embed.set_thumbnail(url=data["image"])
     return embed
 
+@lru_cache(maxsize=100)
 def parse_color_from_str(color_str: str) -> Color:
     c: Color = None
     if color_str.lower() == "random":
@@ -45,6 +46,7 @@ def parse_color_from_str(color_str: str) -> Color:
     
     return c
 
+@lru_cache(maxsize=100)
 def get_color_from_name(color_str: str) -> tuple[str, RGB]:
     for c in loaded_colors:
         if color_str.lower() == c[0].lower(): return Color.from_rgb(*c[1])
@@ -69,10 +71,12 @@ def col_to_rgb(c: Color):
     r, g, b = [round(x * 255) for x in c.rgb]
     return f"rgb({r}, {g}, {b})"
 
+@lru_cache(maxsize=100)
 def color_distance(rgb1: Color, rgb2: Color):
     return sum((a - b) ** 2 for a, b in zip(rgb1.rgb, rgb2.rgb))
 
-def find_closest_color_fast(input_col: Color,):
+@lru_cache(maxsize=100)
+def find_closest_color_fast(input_col: Color):
     input_rgb = np.array(list(input_col.rgb))
     names = [name for name, _ in loaded_colors]
     rgb_values = np.array([rgb for _, rgb in loaded_colors])

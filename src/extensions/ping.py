@@ -4,6 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from bot import Crimbo
+from config import CONFIG
 
 
 class PingCog(commands.Cog):
@@ -18,7 +19,7 @@ class PingCog(commands.Cog):
     async def ping(self, interaction: discord.Interaction, ephemeral: bool=False):
         """Gives information about the bot's latency (in ms)"""
         ping_latency = round(self.bot.latency * 1000)
-        embed = discord.Embed(color=self.bot.config.primary_color)
+        embed = discord.Embed(color=CONFIG.PRIMARY_COLOR)
         embed.add_field(name=':ping_pong: Ping Pong!', value=f"**{ping_latency} ms**")
         await interaction.response.send_message(embed=embed, ephemeral=ephemeral)
 

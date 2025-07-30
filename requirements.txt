@@ -1,0 +1,10 @@
+discord.py
+box
+toml
+imageio[py]
+numpy
+pyopencl
+fuzzywuzzy
+python-dotenv
+colorzero
+python-Levenshtein

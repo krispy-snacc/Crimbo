@@ -1,24 +1,45 @@
+import asyncio
 from datetime import datetime, timezone
-import io
-import pyopencl as cl
-from io import BytesIO
 import discord
+from io import BytesIO
+import pyopencl as cl
 import imageio.v3 as iio
 import numpy as np
 
+from logger import log
+from config import CONFIG
+
+
 def get_default_device(prefer_gpu=True):
-    for platform in cl.get_platforms():
-        devices = platform.get_devices()
-        # Prefer GPU
-        for dev in devices:
-            if prefer_gpu and dev.type == cl.device_type.GPU:
-                return cl.Context([dev])
-        # Fallback to any device
-        if devices:
-            return cl.Context([devices[0]])
-    raise RuntimeError("No OpenCL devices found")
+    try:
+        platforms = cl.get_platforms()
+        for platform in platforms:
+            devices = platform.get_devices()
+
+            if prefer_gpu:
+                for dev in devices:
+                    if dev.type == cl.device_type.GPU:
+                        return cl.Context([dev])
+
+            # Fallback to CPU
+            for dev in devices:
+                if dev.type == cl.device_type.CPU:
+                    return cl.Context([dev])
+
+        # Fallback to any device (last resort)
+        for platform in platforms:
+            devices = platform.get_devices()
+            if devices:
+                return cl.Context([devices[0]])
+
+    except cl.LogicError as e:
+        raise RuntimeError("No usable OpenCL platforms/devices found") from e
 
 ctx = get_default_device()
+
+if CONFIG.DEBUG:
+    for dev in ctx.devices:
+        log.debug(f"Using OpenCL device: {dev.name} (Type: {cl.device_type.to_string(dev.type)})")
 
 async def attachment_to_image(img: discord.Attachment) -> np.ndarray:
     image_bytes = await img.read()
@@ -26,8 +47,8 @@ async def attachment_to_image(img: discord.Attachment) -> np.ndarray:
     return image_array
 
 def image_to_file(img: np.ndarray) -> discord.File:
-    buffer = io.BytesIO()
-    iio.imwrite(buffer, img, format="png")
+    buffer = BytesIO()
+    iio.imwrite(buffer, img, format="png", extension=".png")
     buffer.seek(0)
     file = discord.File(fp=buffer, filename="image.png")
     return file
@@ -48,6 +69,10 @@ def apply_effect(effect_kernel: str, img: np.ndarray, *args) -> np.ndarray:
     region = (width, height, 1)
     cl.enqueue_copy(queue, out_np, out_cl, origin=origin, region=region)
     return out_np
+
+
+async def apply_effect_async(*args, **kwargs):
+    return await asyncio.to_thread(apply_effect, *args, **kwargs)
 
 def image_to_embed(img: np.ndarray, embed_color: discord.Color) -> tuple[discord.Embed, discord.File]:
     file = image_to_file(img)

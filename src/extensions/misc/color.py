@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import discord
 from discord import app_commands
-from discord.ext import commands
 from bot import Crimbo
 from . import misc_group
-from utils import _colors as cl
+from extensions.utils import colors_helper as cl
 
 
 async def color_autocomplete(
@@ -32,6 +31,7 @@ cl.load_colors(filepath=color_db_path)
 async def color(interaction: discord.Interaction, color: str="random", ephemeral: bool=False):
     """Gives detailed info about a color thats provided
     Color must be in either hex format `#808080` or color name from suggestions"""
+    bot: Crimbo = interaction.client
     await interaction.response.defer()
     embed = cl.get_color_embed(color)
     await interaction.followup.send(embed=embed, ephemeral=ephemeral)

@@ -1,6 +1,5 @@
-from typing import Annotated
 from discord import app_commands
-from . import _colors as cl
+from . import colors_helper as cl
 
 color_db_path = "assets/colornames.json"
 cl.load_colors(filepath=color_db_path)

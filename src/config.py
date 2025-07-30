@@ -1,20 +1,38 @@
+from dataclasses import dataclass
 import json
+import discord
 import toml
 from pathlib import Path
-from box import Box
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
-pyproject_path = Path("pyproject.toml")
-pyproject = toml.loads(pyproject_path.read_text())
+@dataclass
+class AppConfig:
+    VERSION: str
+    DEBUG: bool
+    TOKEN: str
+    PRIMARY_COLOR: discord.Color
 
-try:
-    __version__ = pyproject["project"]["version"]
-except KeyError:
-    __version__ = None
+def load_config(path: str) -> AppConfig:
+    with open(path) as f:
+        raw = json.load(f)
 
-CONFIG = Box()
+    pyproject_path = Path("pyproject.toml")
+    pyproject = toml.loads(pyproject_path.read_text())
 
-with open("data/config.json") as f:
-    CONFIG = Box(json.load(f))
+    try:
+        __version__ = pyproject["project"]["version"]
+    except KeyError:
+        __version__ = raw.get("VERSION", None)
 
-CONFIG["version"] = __version__
+
+    return AppConfig(
+        VERSION       = __version__,
+        DEBUG         = os.getenv("CRIMBO_DEBUG", "1") == "1",
+        TOKEN         = os.getenv("TOKEN", None),
+        PRIMARY_COLOR = discord.Color.from_str(raw.get("PRIMARY_COLOR", "#f5ad42")),
+    )
+
+CONFIG = load_config("data/config.json")
